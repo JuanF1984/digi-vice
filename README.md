@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DigiDesk
 
-## Getting Started
+Un escáner de Digimon con identidad de Digivice: chasis claro tipo dispositivo portátil, pantalla LCD oscura embebida y datos leídos en vivo desde [Digi-API](https://digi-api.com/).
 
-First, run the development server:
+Next.js (App Router) + TypeScript + Tailwind CSS. Gestión de dependencias exclusivamente con **pnpm**.
+
+## Requisitos
+
+- Node.js 20+
+- pnpm 11+ (`corepack enable` o `npm i -g pnpm` una única vez por máquina)
+
+## Empezar
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm dev      # servidor de desarrollo (Turbopack)
+pnpm build    # build de producción
+pnpm start    # sirve el build de producción
+pnpm lint     # ESLint
+```
 
-## Learn More
+## Arquitectura
 
-To learn more about Next.js, take a look at the following resources:
+- `app/` — rutas (App Router): inicio, ficha `digimon/[name]`, estados de carga/error
+- `components/ui/` — primitivos del chasis (header, pantalla, chips, LEDs)
+- `components/digimon/` — tarjetas, grilla, buscador, estados, panel de descripción, lectura en voz, evoluciones
+- `lib/digimon/` — acceso a Digi-API, normalización de datos, alias de nombres, formato
+- `services/digimon.ts` — capa única que consumen las páginas
+- `types/digimon.ts` — tipos basados en las respuestas reales de Digi-API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Datos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Toda la información viene de [Digi-API](https://digi-api.com/api/v1) en tiempo real — no hay datos hardcodeados ni base de datos propia.
