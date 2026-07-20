@@ -22,10 +22,10 @@ export function EvolutionRow({ title, items }: EvolutionRowProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="font-data text-[11px] uppercase tracking-[0.2em] text-bone-muted">
+      <h3 className="font-data text-[11px] uppercase tracking-[0.2em] text-bone-muted">
         {title}
         {items.length > MAX_SHOWN ? ` (+${items.length - MAX_SHOWN})` : ""}
-      </h2>
+      </h3>
       <ul className="flex gap-3 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin]">
         {shown.map((evo) => (
           <li key={`${evo.id}-${evo.name}`} className="shrink-0 snap-start">

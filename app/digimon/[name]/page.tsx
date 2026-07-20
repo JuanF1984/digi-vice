@@ -12,8 +12,14 @@ import { NotFoundPanel } from "@/components/digimon/NotFoundPanel";
 import { ErrorPanel } from "@/components/digimon/ErrorPanel";
 import { getDigimon, isDigimonNotFound } from "@/services/digimon";
 import { getSavedTranslation } from "@/services/translations";
+import { resolveAnimeLines } from "@/services/animeEvolutionLines";
 import { hasOptimisticSession } from "@/lib/supabase/session";
 import { decodeDigimonName, formatDexId } from "@/lib/digimon/format";
+import {
+  getAnimeLinesForDigimon,
+  getFamiliarName,
+} from "@/lib/digimon/animeEvolutionLines";
+import { AnimeEvolutionLineSection } from "@/components/digimon/AnimeEvolutionLineSection";
 import type { Digimon } from "@/types/digimon";
 
 interface DigimonPageProps {
@@ -27,7 +33,7 @@ export async function generateMetadata({
   const decodedName = decodeDigimonName(name);
   try {
     const digimon = await getDigimon(decodedName);
-    return { title: `${digimon.name} — DigiDesk` };
+    return { title: `${getFamiliarName(digimon.name)} — DigiDesk` };
   } catch {
     return { title: `${decodedName} — DigiDesk` };
   }
@@ -54,13 +60,18 @@ export default async function DigimonPage({ params }: DigimonPageProps) {
 
   const needsTranslationLookup =
     digimon.description !== null && !digimon.description.isSpanish;
+  const matchingAnimeLines = getAnimeLinesForDigimon(digimon.name);
 
-  const [savedTranslation, canSaveTranslations] = await Promise.all([
+  const [savedTranslation, canSaveTranslations, resolvedAnimeLines] = await Promise.all([
     needsTranslationLookup
       ? getSavedTranslation(digimon.id, digimon.description!.text)
       : Promise.resolve(null),
     hasOptimisticSession(),
+    resolveAnimeLines(matchingAnimeLines),
   ]);
+
+  const familiarName = getFamiliarName(digimon.name);
+  const showCanonicalName = familiarName.toLowerCase() !== digimon.name.toLowerCase();
 
   return (
     <Shell showBack idBadge={formatDexId(digimon.id)}>
@@ -78,8 +89,13 @@ export default async function DigimonPage({ params }: DigimonPageProps) {
 
         <div className="space-y-2 text-center">
           <h1 className="font-display text-2xl font-bold text-bone">
-            {digimon.name}
+            {familiarName}
           </h1>
+          {showCanonicalName ? (
+            <p className="font-data text-[10px] uppercase tracking-widest text-bone-muted">
+              {familiarName} · {digimon.name}
+            </p>
+          ) : null}
           {digimon.levels.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-2">
               {digimon.levels.map((level) => (
@@ -112,14 +128,30 @@ export default async function DigimonPage({ params }: DigimonPageProps) {
           canSaveTranslations={canSaveTranslations}
         />
 
-        <EvolutionRow
-          title="Evoluciones previas"
-          items={digimon.priorEvolutions}
+        <AnimeEvolutionLineSection
+          lines={resolvedAnimeLines}
+          currentDigiApiName={digimon.name}
         />
-        <EvolutionRow
-          title="Próximas evoluciones"
-          items={digimon.nextEvolutions}
-        />
+
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="font-data text-[11px] uppercase tracking-[0.2em] text-bone-muted">
+              Otras evoluciones posibles
+            </h2>
+            <p className="font-body text-xs text-bone-muted">
+              Relaciones registradas por Digi-API: pueden venir de juegos,
+              dispositivos u otras apariciones, no necesariamente del anime.
+            </p>
+          </div>
+          <EvolutionRow
+            title="Evoluciones previas"
+            items={digimon.priorEvolutions}
+          />
+          <EvolutionRow
+            title="Próximas evoluciones"
+            items={digimon.nextEvolutions}
+          />
+        </section>
       </div>
     </Shell>
   );
