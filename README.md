@@ -39,3 +39,15 @@ pnpm lint     # ESLint
 ## Datos
 
 Toda la información viene de [Digi-API](https://digi-api.com/api/v1) en tiempo real — no hay datos hardcodeados ni base de datos propia.
+
+## Documentación interna
+
+Para retomar el proyecto sin reconstruir todo el contexto, ver `docs/`:
+
+- [docs/README.md](./docs/README.md) — resumen, stack, cómo correr y buildear, estructura, flujo de datos.
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — arquitectura de Next.js, Server/Client Components, servicios, traducción, auth, RLS, voz.
+- [docs/SUPABASE.md](./docs/SUPABASE.md) — variables de entorno, tabla `digimon_translations`, RLS, cómo depurar.
+- [docs/DIGIMON_DATA.md](./docs/DIGIMON_DATA.md) — Digi-API, alias de nombres, líneas curadas del anime, limitaciones.
+- [docs/DECISIONS.md](./docs/DECISIONS.md) — decisiones técnicas y por qué se tomaron.
+- [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) — síntomas conocidos y su causa real.
+- [docs/NEXT_STEPS.md](./docs/NEXT_STEPS.md) — mejoras pendientes e ideas futuras.
