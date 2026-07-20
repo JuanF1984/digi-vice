@@ -9,6 +9,7 @@ import {
   getCachedTranslation,
   setCachedTranslation,
 } from "@/lib/digimon/translationCache";
+import { saveTranslation } from "@/lib/digimon/saveTranslation";
 
 interface TranslatedDescriptionProps {
   originalText: string;
@@ -17,10 +18,21 @@ interface TranslatedDescriptionProps {
   isAlreadySpanish: boolean;
   /** Canonical/visible Digimon name, always read aloud in English. */
   digimonName: string;
+  /** Digi-API's numeric id — the key used in digimon_translations. */
+  digimonId: number;
+  /** A translation already saved in Supabase for this exact description, if
+   * any — takes priority over the browser's Translator API entirely. */
+  savedText: string | null;
+  /** Optimistic-only signal that a session might exist (see
+   * lib/supabase/session.ts) — gates whether a fresh Chrome translation is
+   * even attempted to be saved. The real write authorization happens in the
+   * Route Handler + RLS. */
+  canSaveTranslations: boolean;
 }
 
 type TranslationState =
   | { kind: "already-spanish" }
+  | { kind: "saved"; text: string }
   | { kind: "checking" }
   | { kind: "preparing" }
   | { kind: "translating" }
@@ -64,6 +76,9 @@ export function TranslatedDescription({
   sourceLanguage,
   isAlreadySpanish,
   digimonName,
+  digimonId,
+  savedText,
+  canSaveTranslations,
 }: TranslatedDescriptionProps) {
   const translatorSource = useMemo(
     () => toTranslatorSource(sourceLanguage),
@@ -74,9 +89,14 @@ export function TranslatedDescription({
   // need sessionStorage, which doesn't exist on the server, so a cache hit
   // is resolved separately below instead of from this initializer (doing
   // it here would make the server's "checking" HTML mismatch a client that
-  // hydrates straight into "translated").
+  // hydrates straight into "translated"). A Supabase-saved translation, by
+  // contrast, arrived with the server-rendered props themselves, so it's
+  // safe to use directly here — no hydration mismatch, no decoding flash,
+  // and (per the read-priority order) it always wins over the Translator
+  // API.
   const [state, setState] = useState<TranslationState>(() => {
     if (isAlreadySpanish) return { kind: "already-spanish" };
+    if (savedText) return { kind: "saved", text: savedText };
     if (!translatorSource) return { kind: "unavailable" };
     return { kind: "checking" };
   });
@@ -86,23 +106,25 @@ export function TranslatedDescription({
   // hydration mismatch (the server-rendered markup briefly matches, then
   // this swaps it out pre-paint, same as any other client-only state sync).
   useIsomorphicLayoutEffect(() => {
-    if (isAlreadySpanish || !translatorSource) return;
+    if (isAlreadySpanish || savedText || !translatorSource) return;
     const cached = getCachedTranslation(
       originalText,
       translatorSource,
       TARGET_LANGUAGE,
     );
     if (cached) setState({ kind: "translated", text: cached });
-  }, [originalText, translatorSource, isAlreadySpanish]);
+  }, [originalText, translatorSource, isAlreadySpanish, savedText]);
 
   useEffect(() => {
     // Nothing to do — the initializer above already picked the right
-    // terminal state for these: already Spanish, no translator source, or a
-    // synchronous cache hit.
+    // terminal state for these: already Spanish, a Supabase-saved
+    // translation, no translator source, or a synchronous cache hit.
     if (
       isAlreadySpanish ||
+      savedText ||
       !translatorSource ||
-      state.kind === "translated"
+      state.kind === "translated" ||
+      state.kind === "saved"
     ) {
       return;
     }
@@ -146,6 +168,19 @@ export function TranslatedDescription({
           translated,
         );
         setState({ kind: "translated", text: translated });
+
+        // Fire-and-forget: only attempted when a session might exist, never
+        // awaited or allowed to affect what's on screen. No saved
+        // translation existed yet (that branch never reaches this effect),
+        // so this can't overwrite anything.
+        if (canSaveTranslations) {
+          saveTranslation({
+            digimonId,
+            digimonName,
+            sourceText: originalText,
+            translatedText: translated,
+          });
+        }
       } catch (error) {
         // Covers every failure mode: unsupported browser, no model for this
         // pair, missing user activation, blocked/failed download, or a
@@ -160,15 +195,20 @@ export function TranslatedDescription({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originalText, translatorSource, isAlreadySpanish]);
+  }, [originalText, translatorSource, isAlreadySpanish, savedText]);
 
   const isProcessing =
     state.kind === "checking" ||
     state.kind === "preparing" ||
     state.kind === "translating";
   const isSpanishNow =
-    state.kind === "translated" || state.kind === "already-spanish";
-  const displayedText = state.kind === "translated" ? state.text : originalText;
+    state.kind === "translated" ||
+    state.kind === "already-spanish" ||
+    state.kind === "saved";
+  const displayedText =
+    state.kind === "translated" || state.kind === "saved"
+      ? state.text
+      : originalText;
   const originalLabel = (
     DESCRIPTION_LANGUAGE_LABELS[sourceLanguage] ?? sourceLanguage
   ).toLowerCase();
@@ -176,9 +216,11 @@ export function TranslatedDescription({
   const caption =
     state.kind === "translated"
       ? "Traducción del navegador"
-      : state.kind === "already-spanish"
-        ? ""
-        : `Descripción original en ${originalLabel}`;
+      : state.kind === "saved"
+        ? "Traducción guardada"
+        : state.kind === "already-spanish"
+          ? ""
+          : `Descripción original en ${originalLabel}`;
 
   if (isProcessing) {
     return <DecodingPanel />;

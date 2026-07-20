@@ -11,6 +11,8 @@ import { EvolutionRow } from "@/components/digimon/EvolutionRow";
 import { NotFoundPanel } from "@/components/digimon/NotFoundPanel";
 import { ErrorPanel } from "@/components/digimon/ErrorPanel";
 import { getDigimon, isDigimonNotFound } from "@/services/digimon";
+import { getSavedTranslation } from "@/services/translations";
+import { hasOptimisticSession } from "@/lib/supabase/session";
 import { decodeDigimonName, formatDexId } from "@/lib/digimon/format";
 import type { Digimon } from "@/types/digimon";
 
@@ -49,6 +51,16 @@ export default async function DigimonPage({ params }: DigimonPageProps) {
       </Shell>
     );
   }
+
+  const needsTranslationLookup =
+    digimon.description !== null && !digimon.description.isSpanish;
+
+  const [savedTranslation, canSaveTranslations] = await Promise.all([
+    needsTranslationLookup
+      ? getSavedTranslation(digimon.id, digimon.description!.text)
+      : Promise.resolve(null),
+    hasOptimisticSession(),
+  ]);
 
   return (
     <Shell showBack idBadge={formatDexId(digimon.id)}>
@@ -92,7 +104,13 @@ export default async function DigimonPage({ params }: DigimonPageProps) {
           />
         ) : null}
 
-        <DescriptionPanel description={digimon.description} name={digimon.name} />
+        <DescriptionPanel
+          description={digimon.description}
+          name={digimon.name}
+          digimonId={digimon.id}
+          savedTranslation={savedTranslation}
+          canSaveTranslations={canSaveTranslations}
+        />
 
         <EvolutionRow
           title="Evoluciones previas"
