@@ -41,7 +41,7 @@ export default async function HomePage() {
         </p>
 
         <ScreenPanel className="p-4 sm:p-6">
-          <div className="space-y-6">
+          <div className="space-y-8">
             <SearchBar />
 
             {curatedSections.map((section) => (

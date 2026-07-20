@@ -20,12 +20,16 @@
  *   Pokomon → "Viximon", "Holy Angemon" → "MagnaAngemon",
  *   "Atlur Kabuterimon (Red)" → "MegaKabuterimon",
  *   "Herakle Kabuterimon" → "HerculesKabuterimon",
- *   Hououmon → "Phoenixmon", Tailmon → "Gatomon", "V-mon" → "Veemon"
+ *   Hououmon → "Phoenixmon", Holydramon → "Magnadramon",
+ *   Tailmon → "Gatomon", "V-mon" → "Veemon"
  *   (these last two already had entries in aliases.ts).
  *
- * Known gap: Digi-API has no "Magnadramon" record at all (confirmed via
- * both direct lookup and partial-name search), so Gatomon's curated line
- * stops at Angewomon instead of guessing a Mega stage.
+ * Gatomon's Mega stage ("Holydramon" in Digi-API) was easy to miss: a plain
+ * "Magnadramon" lookup 400s and a "Magna"/"Dramon" partial-name search turns
+ * up nothing, since Digi-API's search endpoint doesn't do substring
+ * matching. It only surfaced by reading Angewomon's and Tailmon's own
+ * `priorEvolutions`/`nextEvolutions` arrays, which both reference
+ * "Holydramon" directly — confirming the link independently of the name.
  */
 
 export type AnimeSeries = "adventure" | "adventure02" | "tamers";
@@ -158,7 +162,7 @@ export const ANIME_EVOLUTION_LINES: AnimeEvolutionLine[] = [
       stage("Plotmon", "Salamon"),
       stage("Tailmon", "Gatomon"),
       stage("Angewomon"),
-      // No Mega stage: Digi-API has no "Magnadramon" record — see file header.
+      stage("Holydramon", "Magnadramon"),
     ],
   },
 
@@ -240,7 +244,7 @@ export const ANIME_EVOLUTION_LINES: AnimeEvolutionLine[] = [
       stage("Zerimon"),
       stage("Gummymon"),
       stage("Terriermon"),
-      stage("Gargomon"),
+      stage("Galgomon"),
       stage("Rapidmon Perfect", "Rapidmon"),
       stage("Saint Galgomon", "MegaGargomon"),
     ],

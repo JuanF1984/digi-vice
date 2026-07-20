@@ -8,10 +8,14 @@ interface CuratedSeriesSectionProps {
 
 /**
  * One of the homepage's curated-by-series rows (Adventure / 02 / Tamers).
- * A horizontal touch-scroll row below `sm` keeps card images full-size and
- * the section short regardless of item count; from `sm` up there's enough
- * width to lay them out as a wrapped grid instead, which reads more
- * naturally on a non-touch, mouse-driven screen.
+ * A real grid at every breakpoint — never a horizontal scroll, so no card
+ * is ever partially cut off — capped at 4 columns so a section with only a
+ * handful of protagonists (Tamers has 3) still gets roomy, individually
+ * legible cards instead of everything squeezed into one dense row.
+ * Adventure's 8 protagonists simply wrap onto a second row rather than
+ * forcing an 8-column layout. The page's own `max-w-3xl` container stops
+ * growing past the `md` breakpoint, so there's no need for a wider tier —
+ * more viewport width past that point doesn't give this grid more room.
  */
 export function CuratedSeriesSection({ title, items }: CuratedSeriesSectionProps) {
   if (items.length === 0) return null;
@@ -21,10 +25,10 @@ export function CuratedSeriesSection({ title, items }: CuratedSeriesSectionProps
       <h2 className="font-data text-[11px] uppercase tracking-[0.2em] text-bone-muted">
         {title}
       </h2>
-      <ul className="flex snap-x gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:grid sm:grid-cols-4 sm:gap-4 sm:overflow-visible sm:pb-0 md:grid-cols-5 xl:grid-cols-8">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4">
         {items.map((d, i) => (
-          <li key={d.id} className="w-28 shrink-0 snap-start sm:w-auto">
-            <DigimonCard digimon={d} priority={i < 4} />
+          <li key={d.id}>
+            <DigimonCard digimon={d} priority={i < 4} variant="spacious" />
           </li>
         ))}
       </ul>
