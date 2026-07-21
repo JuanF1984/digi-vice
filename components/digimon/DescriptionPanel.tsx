@@ -42,7 +42,7 @@ export function DescriptionPanel({
           isAlreadySpanish={description.isSpanish}
           digimonName={name}
           digimonId={digimonId}
-          savedText={savedTranslation?.text ?? null}
+          savedText={savedTranslation?.translatedText ?? null}
           canSaveTranslations={canSaveTranslations}
         />
       ) : (

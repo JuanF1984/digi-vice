@@ -4,7 +4,7 @@ import { computeSourceHash } from "@/lib/supabase/hash";
 export type ReviewStatus = "automatic" | "reviewed" | "corrected";
 
 export interface SavedTranslation {
-  text: string;
+  translatedText: string;
   reviewStatus: ReviewStatus;
 }
 
@@ -56,7 +56,7 @@ export async function getSavedTranslation(
     )[0];
 
     return {
-      text: best.translated_text,
+      translatedText: best.translated_text,
       reviewStatus: best.review_status as ReviewStatus,
     };
   } catch (error) {

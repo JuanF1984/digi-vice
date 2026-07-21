@@ -51,3 +51,4 @@ Para retomar el proyecto sin reconstruir todo el contexto, ver `docs/`:
 - [docs/DECISIONS.md](./docs/DECISIONS.md) — decisiones técnicas y por qué se tomaron.
 - [docs/TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md) — síntomas conocidos y su causa real.
 - [docs/NEXT_STEPS.md](./docs/NEXT_STEPS.md) — mejoras pendientes e ideas futuras.
+- [docs/CYD_ENDPOINTS.md](./docs/CYD_ENDPOINTS.md) — endpoints agregados para el firmware de la CYD (Pokémon/Digivice).

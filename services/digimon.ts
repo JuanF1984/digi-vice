@@ -2,6 +2,7 @@ import {
   fetchDigimonByName,
   fetchDigimonListPage,
   DigimonNotFoundError,
+  type FetchDigimonOptions,
 } from "@/lib/digimon/api";
 import { normalizeDigimon, toCardData } from "@/lib/digimon/normalize";
 import { DIGIMON_PAGE_SIZE } from "@/lib/digimon/constants";
@@ -18,9 +19,16 @@ export { DigimonNotFoundError, DigimonApiError } from "@/lib/digimon/api";
 /**
  * Full detail for one digimon, normalized for the UI.
  * Throws DigimonNotFoundError / DigimonApiError — callers decide how to render that.
+ *
+ * `options.signal` is optional and unused by every existing caller in this
+ * file (home page, ficha page, catalog pagination all call this with no
+ * second argument) — only the CYD-facing routes pass a timeout signal.
  */
-export async function getDigimon(name: string): Promise<Digimon> {
-  const raw = await fetchDigimonByName(name);
+export async function getDigimon(
+  name: string,
+  options?: FetchDigimonOptions,
+): Promise<Digimon> {
+  const raw = await fetchDigimonByName(name, options);
   return normalizeDigimon(raw);
 }
 

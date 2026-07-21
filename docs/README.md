@@ -13,6 +13,7 @@ correspondiente en el mismo commit que cambia el código.
 - [DECISIONS.md](./DECISIONS.md) — decisiones técnicas y por qué se tomaron.
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) — síntomas conocidos y su causa real.
 - [NEXT_STEPS.md](./NEXT_STEPS.md) — mejoras pendientes e ideas futuras.
+- [CYD_ENDPOINTS.md](./CYD_ENDPOINTS.md) — endpoints `?display=tft` e `/image` agregados para el firmware de la CYD (Etapa A, servidor únicamente).
 
 ## Resumen general
 

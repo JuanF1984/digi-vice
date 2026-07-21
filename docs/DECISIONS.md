@@ -108,6 +108,30 @@ navegador sea indistinguible de "la traducción no existe", sin mirar los
 logs del servidor. Las traducciones ya guardadas no necesitaron
 regenerarse — el dato y el hash siempre fueron correctos.
 
+## Endpoints para la CYD (Etapa A) — cambios al código compartido
+
+Ver [CYD_ENDPOINTS.md](./CYD_ENDPOINTS.md) para el contrato completo. Acá solo
+el porqué de los tres cambios que tocaron código ya existente (no solo los
+dos endpoints nuevos):
+
+- **`signal` opcional en `fetchDigimonByName`/`digiApiFetch`/`getDigimon`**:
+  las rutas de la CYD necesitan un timeout duro contra Digi-API para poder
+  responder ellas mismas antes de que la plataforma corte la función (mismo
+  problema ya resuelto para el endpoint de audio del proyecto hermano
+  `pokemon/`). Agregar el timeout directamente adentro de `digiApiFetch` sin
+  parametrizarlo habría afectado también al home y a la ficha web, sin haber
+  sido pedido ni probado para esos casos — por eso quedó como parámetro
+  opcional con default `undefined` (sin cambio de comportamiento) en vez de
+  un timeout fijo global.
+- **`SavedTranslation.text` → `SavedTranslation.translatedText`**: nombre más
+  claro para el contrato JSON externo que ahora expone este dato. Se verificó
+  primero que `getSavedTranslation()` ya devolvía `reviewStatus` correctamente
+  (no lo descartaba, como se sospechaba antes de leer el código) — el único
+  cambio real fue el nombre del campo, con su único consumidor
+  (`DescriptionPanel.tsx`) actualizado en el mismo cambio.
+- **`sharp` como dependencia directa**: ver la sección dedicada en
+  [CYD_ENDPOINTS.md](./CYD_ENDPOINTS.md#dependencia-sharp--qué-se-verificó-antes-de-agregarla).
+
 ### Regresión conocida: acceso dinámico a `process.env.NEXT_PUBLIC_*`
 
 Documentada preventivamente en el comentario de `lib/supabase/env.ts`: si el
