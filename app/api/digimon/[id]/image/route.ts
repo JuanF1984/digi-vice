@@ -150,10 +150,15 @@ export async function GET(
 
   console.log(`[digidesk] [image] id=${id} bytes=${jpeg.length}`);
 
-  return new Response(jpeg, {
+  // Response's BodyInit type doesn't accept Buffer<ArrayBufferLike> directly
+  // (sharp's toBuffer() return type) — copy into a plain Uint8Array instead
+  // of casting, so this stays a real type fix, not a hidden one.
+  const responseBody = Uint8Array.from(jpeg);
+
+  return new Response(responseBody, {
     headers: {
       "Content-Type": "image/jpeg",
-      "Content-Length": jpeg.length.toString(),
+      "Content-Length": responseBody.byteLength.toString(),
       "Cache-Control": "public, max-age=604800, immutable",
     },
   });
